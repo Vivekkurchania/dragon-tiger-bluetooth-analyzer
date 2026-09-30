@@ -1,4 +1,4 @@
-name: Build APKs
+name: Build Android APKs
 
 on:
   workflow_dispatch:
@@ -21,23 +21,38 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Gradle
+      - name: Set up Gradle 8.7
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
 
-      - name: Make Gradle executable
-        run: chmod +x gradlew
+      - name: Check project
+        run: |
+          echo "Project files:"
+          ls -la
+          echo "Sender app:"
+          ls -la sender-app
+          echo "Analyzer app:"
+          ls -la analyzer-app
 
       - name: Build Sender APK
-        run: ./gradlew :sender-app:assembleDebug
+        run: gradle :sender-app:assembleDebug --no-daemon
 
       - name: Build Analyzer APK
-        run: ./gradlew :analyzer-app:assembleDebug
+        run: gradle :analyzer-app:assembleDebug --no-daemon
 
       - name: Prepare APKs
         run: |
           mkdir -p apk-output
-          cp sender-app/build/outputs/apk/debug/*.apk apk-output/Dragon-Tiger-Sender.apk
-          cp analyzer-app/build/outputs/apk/debug/*.apk apk-output/Dragon-Tiger-Analyzer.apk
+
+          cp sender-app/build/outputs/apk/debug/*.apk \
+            apk-output/Dragon-Tiger-Sender.apk
+
+          cp analyzer-app/build/outputs/apk/debug/*.apk \
+            apk-output/Dragon-Tiger-Analyzer.apk
+
+          echo "APK files:"
+          ls -lh apk-output
 
       - name: Upload APKs
         uses: actions/upload-artifact@v4
